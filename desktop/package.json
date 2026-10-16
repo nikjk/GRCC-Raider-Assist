@@ -1,8 +1,78 @@
 {
- "name":"raider-assist-desktop","version":"0.1.0","private":true,"type":"module",
- "main":"electron/main.cjs",
- "scripts":{"dev":"concurrently -k \"ng serve --host 127.0.0.1 --port 4200\" \"wait-on http://127.0.0.1:4200 && electron .\"","build":"ng build","desktop":"electron .","package:mac":"npm run build && electron-builder --mac --publish never","package:win":"npm run build && electron-builder --win --publish never"},
- "dependencies":{"@angular/animations":"^20.3.0","@angular/common":"^20.3.0","@angular/compiler":"^20.3.0","@angular/core":"^20.3.0","@angular/forms":"^20.3.0","@angular/platform-browser":"^20.3.0","rxjs":"~7.8.2","tslib":"^2.8.1","zone.js":"~0.15.1"},
- "devDependencies":{"@angular/build":"^20.3.0","@angular/cli":"^20.3.0","@angular/compiler-cli":"^20.3.0","@types/node":"^22.15.0","concurrently":"^9.2.0","electron":"^38.0.0","electron-builder":"^26.0.0","typescript":"~5.9.2","wait-on":"^8.0.0"},
- "build":{"appId":"edu.grcc.raiderassist","productName":"GRCC Raider Assist","directories":{"output":"../release"},"files":["dist/**/*","electron/**/*","package.json","assets/**/*"],"asar":true,"mac":{"category":"public.app-category.productivity","target":["dmg","zip"]},"win":{"target":["nsis"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true}}
+  "name": "raider-assist-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"ng serve --host 127.0.0.1 --port 4200\" \"wait-on http://127.0.0.1:4200 && electron .\"",
+    "build": "ng build --base-href ./",
+    "desktop": "electron .",
+    "package:mac": "npm run build && electron-builder --mac dmg zip --publish never",
+    "package:win": "npm run build && electron-builder --win --publish never",
+    "package:mac:dir": "npm run build && electron-builder --mac dir --publish never"
+  },
+  "dependencies": {
+    "@angular/animations": "^20.3.0",
+    "@angular/common": "^20.3.0",
+    "@angular/compiler": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
+    "@angular/platform-browser": "^20.3.0",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1",
+    "zone.js": "~0.15.1"
+  },
+  "devDependencies": {
+    "@angular/build": "^20.3.0",
+    "@angular/cli": "^20.3.0",
+    "@angular/compiler-cli": "^20.3.0",
+    "@types/node": "^22.15.0",
+    "concurrently": "^9.2.0",
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0",
+    "typescript": "~5.9.2",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "edu.grcc.raiderassist",
+    "productName": "GRCC Raider Assist",
+    "directories": {
+      "output": "../release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!electron/**/*.env",
+      "!electron/**/backend/**"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "electron/assets/raider.icns",
+      "hardenedRuntime": false,
+      "identity": null,
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "electron/assets/raider.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "extraMetadata": {
+      "main": "electron/main.cjs"
+    }
+  }
 }

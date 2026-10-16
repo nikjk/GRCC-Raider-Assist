@@ -1,2 +1,2 @@
 const {contextBridge,ipcRenderer}=require('electron');
-contextBridge.exposeInMainWorld('raider',Object.freeze({getDevice:()=>ipcRenderer.invoke('device:get'),getBackendStatus:()=>ipcRenderer.invoke('backend:status'),submitTicket:(payload)=>ipcRenderer.invoke('ticket:submit',payload),openExternal:(url)=>ipcRenderer.invoke('url:open',url)}));
+contextBridge.exposeInMainWorld('raider',Object.freeze({getDevice:()=>ipcRenderer.invoke('device:get'),getBackendStatus:()=>ipcRenderer.invoke('backend:status'),getLocations:()=>ipcRenderer.invoke('locations:list'),getRooms:(locationId)=>ipcRenderer.invoke('locations:rooms',locationId),submitTicket:(payload)=>ipcRenderer.invoke('ticket:submit',payload),openExternal:(url)=>ipcRenderer.invoke('url:open',url)}));
