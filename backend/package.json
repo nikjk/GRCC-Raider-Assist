@@ -1,0 +1,1 @@
+{"name":"raider-assist-backend","private":true,"version":"0.1.0","type":"module","scripts":{"start":"node --env-file-if-exists=.env server.mjs","test":"node --test *.test.mjs"}}

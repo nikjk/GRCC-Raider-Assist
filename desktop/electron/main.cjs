@@ -1,0 +1,13 @@
+const {app,BrowserWindow,Tray,Menu,nativeImage,ipcMain,shell}=require('electron');const path=require('node:path');const {getDevice}=require('./device.cjs');
+let win,tray;const API=process.env.RAIDER_API_URL||'http://127.0.0.1:8789';
+function icon(){const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#00306B"/><path d="M11 8h14c10 0 15 6 15 14 0 7-5 11-10 12l9 9H26L15 31v12h-4zm4 9v10h10c5 0 7-2 7-5s-2-5-7-5z" fill="#FFDD00"/></svg>';return nativeImage.createFromDataURL('data:image/svg+xml;base64,'+Buffer.from(svg).toString('base64')).resize({width:20,height:20});}
+function createWindow(){win=new BrowserWindow({width:610,height:845,minWidth:470,minHeight:650,show:false,autoHideMenuBar:true,title:'GRCC Raider Assist',webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
+ const isDev=!app.isPackaged;if(isDev)win.loadURL('http://127.0.0.1:4200');else win.loadFile(path.join(__dirname,'../dist/browser/index.html'));
+ win.once('ready-to-show',()=>win.show());win.on('close',e=>{if(!app.isQuitting){e.preventDefault();win.hide();}});win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',e=>e.preventDefault());}
+async function send(pathname,init={}){const response=await fetch(new URL(pathname,API),{...init,signal:AbortSignal.timeout(15000)});const data=await response.json().catch(()=>({}));if(!response.ok)throw Error(data.error||`Server responded ${response.status}`);return data;}
+app.whenReady().then(()=>{createWindow();tray=new Tray(icon());tray.setToolTip('GRCC Raider Assist');tray.setContextMenu(Menu.buildFromTemplate([{label:'Request IT assistance',click:()=>win.show()},{label:'Quit Raider Assist',click:()=>{app.isQuitting=true;app.quit()}}]));tray.on('click',()=>win.isVisible()?win.hide():win.show());
+ ipcMain.handle('device:get',()=>getDevice());ipcMain.handle('backend:status',()=>send('/health'));
+ ipcMain.handle('ticket:submit',async(_event,payload)=>{const device=await getDevice();return send('/api/tickets',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...payload,device})});});
+ ipcMain.handle('url:open',async(_event,url)=>{const allowed='https://supportdesk.grcc.edu/';if(typeof url!=='string'||!url.startsWith(allowed))throw Error('Untrusted URL');await shell.openExternal(url)});
+ if(process.env.RAIDER_AUTO_START==='1')app.setLoginItemSettings({openAtLogin:true});});
+app.on('window-all-closed',()=>{});app.on('activate',()=>{if(win)win.show()});

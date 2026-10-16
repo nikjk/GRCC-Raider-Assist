@@ -1,0 +1,5 @@
+{
+ "name":"grcc-raider-assist","version":"0.1.0","private":true,"description":"GRCC Raider Assist desktop support client and trusted API foundation",
+ "scripts":{"start":"npm run dev","dev":"concurrently -k \"npm run dev:backend\" \"npm run dev:desktop\"","dev:backend":"node --env-file-if-exists=backend/.env backend/server.mjs","dev:desktop":"npm --prefix desktop run dev","build":"npm --prefix desktop run build","test":"node --test backend/*.test.mjs"},
+ "devDependencies":{"concurrently":"^9.2.0"}
+}
