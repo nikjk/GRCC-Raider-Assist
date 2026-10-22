@@ -78,3 +78,6 @@ tmp/
 temp/
 *.tmp
 *.bak
+
+# Local development backups
+*.backup
