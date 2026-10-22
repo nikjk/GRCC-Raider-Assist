@@ -95,3 +95,11 @@ input[list]:focus{outline:2px solid #00306b;outline-offset:1px}
 .raider-search-input-wrap input{padding-right:39px!important}
 .raider-search-clear{position:absolute;top:50%;right:7px;transform:translateY(-50%);display:grid;place-items:center;width:27px;height:27px;border:0;border-radius:6px;background:transparent;color:#65778e;font-size:21px;line-height:1;cursor:pointer}
 .raider-search-clear:hover,.raider-search-clear:focus-visible{background:#edf4fc;color:#00306b;outline-offset:1px}
+
+
+/* Expandable diagnostics — matches Raider Assist device card styling. */
+.diagnostics-expand { margin-top: 14px; border-top: 1px solid #d8e3f0; }
+.diagnostics-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 4px; border: 0; background: transparent; color: #00306b; text-align: left; font-size: 12px; font-weight: 700; }
+.diagnostics-toggle:hover { color: #001d41; }
+.diagnostics-toggle:focus-visible { outline: 2px solid #e5ac19; outline-offset: 3px; border-radius: 3px; }
+.diagnostics-specs { margin: 10px 0 4px; }

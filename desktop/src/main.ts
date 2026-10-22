@@ -4,7 +4,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-type Device = { loggedInUsername?:string; hostname:string; serial:string|null; manufacturer:string|null; model:string|null; os:string; osVersion:string; architecture:string; cpu:string; memoryGB:number; diskFreeGB:number|null; diskTotalGB?:number|null; osBuild?:string; uptimeHours?:number; networkType?:string; platform:string };
+type Device = { cpuUsagePercent?:number|null; memoryUsagePercent?:number|null; memoryUsedGB?:number|null; memoryAvailableGB?:number|null; loggedInUsername?:string; hostname:string; serial:string|null; manufacturer:string|null; model:string|null; os:string; osVersion:string; architecture:string; cpu:string; memoryGB:number; diskFreeGB:number|null; diskTotalGB?:number|null; osBuild?:string; uptimeHours?:number; networkType?:string; platform:string };
 type LocationOption={id:number;name:string};
 type RoomOption={id:number;name:string};
 type Choice = 'computer'|'monitor'|'dock'|'keyboard'|'mouse'|'other';
@@ -14,7 +14,7 @@ declare global { interface Window { raider?:Bridge } }
 @Component({selector:'app-root', standalone:true,imports:[CommonModule,FormsModule],templateUrl:'./app.html'})
 export class AppComponent implements OnInit {
  choices:{id:Choice;label:string;symbol:string}[]=[{id:'computer',label:'Computer',symbol:'▣'},{id:'monitor',label:'Monitor',symbol:'▤'},{id:'dock',label:'Docking station',symbol:'▥'},{id:'keyboard',label:'Keyboard',symbol:'⌨'},{id:'mouse',label:'Mouse',symbol:'◉'},{id:'other',label:'Other',symbol:'⋯'}];
- requestorUsername=''; requestorType:'staff'|'student'='staff'; kind:Choice='computer'; title=''; details=''; locationId:number|null=null; roomId:number|null=null; buildingText=''; roomText=''; pickerOpen:'building'|'room'|null=null; pickerIndex=0; peripheralSerial=''; includeDiagnostics=true;
+ requestorUsername=''; requestorType:'staff'|'student'='staff'; kind:Choice='computer'; title=''; details=''; locationId:number|null=null; roomId:number|null=null; buildingText=''; roomText=''; pickerOpen:'building'|'room'|null=null; pickerIndex=0; peripheralSerial=''; includeDiagnostics=true; diagnosticsExpanded=false;
  locations=signal<LocationOption[]>([]); rooms=signal<RoomOption[]>([]); locationsLoading=signal(false); roomsLoading=signal(false); locationsError=signal(''); roomsError=signal('');
  busy=signal(false); device=signal<Device|null>(null); error=signal(''); success=signal<SubmitResult|null>(null); mode=signal('Checking backend…');
  async ngOnInit(){try{this.device.set(await this.bridge().getDevice());this.requestorUsername=(this.device()?.loggedInUsername||'').replace(/@.*$/,'');const status=await this.bridge().getBackendStatus();this.mode.set(status.mode==='demo'?'Local demo mode':status.mode==='sandbox-readonly'?'Sandbox locations • ticket demo mode':status.mode==='sandbox-test'?'SANDBOX TEST • creates real test tickets':'Trusted backend • '+status.identityStatus);await this.loadLocations();}catch(e){this.error.set(String(e));this.mode.set('Unavailable')}}
@@ -67,11 +67,30 @@ export class AppComponent implements OnInit {
  }
 
  select(kind:Choice){this.kind=kind;this.success.set(null);this.error.set('')}
- async submit(){if(this.busy()||!this.title.trim()||!this.details.trim())return;
+ private confirmationVersion = 0;
+ async submit(){
+  if(this.busy()||!this.title.trim()||!this.details.trim())return;
   if(this.buildingText.trim() && this.locationId===null){this.error.set('Select a building from the suggestions.');return;}
-  if(this.roomText.trim() && this.roomId===null){this.error.set('Select a room from the suggestions.');return;}this.error.set('');this.success.set(null);this.busy.set(true);
-  try{const result=await this.bridge().submitTicket({kind:this.kind,requestorUsername:this.requestorUsername.trim(),requestorType:this.requestorType,title:this.title.trim(),description:this.details.trim(),locationId:this.locationId,roomId:this.roomId,peripheralSerial:this.peripheralSerial.trim(),includeDiagnostics:this.includeDiagnostics});this.success.set(result);if(result.ticketId){this.title='';this.details='';this.peripheralSerial='';}}
-  catch(e){this.error.set(e instanceof Error?e.message:String(e));}finally{this.busy.set(false)} }
+  if(this.roomText.trim() && this.roomId===null){this.error.set('Select a room from the suggestions.');return;}
+  const confirmationVersion=++this.confirmationVersion;
+  this.error.set('');this.success.set(null);this.busy.set(true);
+  try{
+   const result=await this.bridge().submitTicket({
+    kind:this.kind,requestorUsername:this.requestorUsername.trim(),requestorType:this.requestorType,
+    title:this.title.trim(),description:this.details.trim(),locationId:this.locationId,roomId:this.roomId,
+    peripheralSerial:this.peripheralSerial.trim(),includeDiagnostics:this.includeDiagnostics
+   });
+   this.success.set(result);
+   if(result.ticketId){
+    this.title='';this.details='';this.peripheralSerial='';
+    this.clearBuildingSelection();
+   }
+   setTimeout(()=>{
+    if(this.confirmationVersion===confirmationVersion)this.success.set(null);
+   },30000);
+  }catch(e){this.error.set(e instanceof Error?e.message:String(e));}
+  finally{this.busy.set(false)}
+ }
  async openTicket(){const u=this.success()?.url;if(u)await this.bridge().openExternal(u)}
 }
 bootstrapApplication(AppComponent).catch(console.error);

@@ -22,5 +22,38 @@
     <div class="raider-search-empty" *ngIf="filteredRooms().length===0">No matching rooms</div>
   </div>
 </div><p class="field-hint" *ngIf="roomsError()">{{roomsError()}}</p></div><div *ngIf="kind!=='computer'"><label for="serial">Affected device serial (optional)</label><input id="serial" maxlength="120" placeholder="From device label" [(ngModel)]="peripheralSerial"/></div></div></section>
-<section class="device" *ngIf="device() as d"><div class="device-title"><h2>4. Computer information</h2><span class="pill">Detected locally</span></div><div class="specs"><div><small>Computer</small><strong>{{d.hostname}}</strong></div><div><small>Serial number</small><strong>{{d.serial||'Unavailable'}}</strong></div><div><small>Manufacturer / model</small><strong>{{(d.manufacturer||'Unknown')+' '+(d.model||'')}}</strong></div><div><small>Operating system</small><strong>{{d.os}} {{d.osVersion}}</strong></div></div><label class="check"><input type="checkbox" [(ngModel)]="includeDiagnostics"/> Include computer diagnostics with my support request</label><p class="hint">The trusted server identifies you separately. Device information is not proof of identity.</p></section>
+<section class="device" *ngIf="device() as d">
+  <div class="device-title"><h2>4. Computer information</h2><span class="pill">Detected locally</span></div>
+  <div class="specs">
+    <div><small>Computer</small><strong>{{d.hostname}}</strong></div>
+    <div><small>Serial number</small><strong>{{d.serial || 'Unavailable'}}</strong></div>
+    <div><small>Manufacturer / model</small><strong>{{(d.manufacturer || 'Unknown') + ' ' + (d.model || '')}}</strong></div>
+    <div><small>Operating system</small><strong>{{d.os}} {{d.osVersion}}</strong></div>
+  </div>
+  <div class="diagnostics-expand">
+    <button type="button" class="diagnostics-toggle" [attr.aria-expanded]="diagnosticsExpanded" aria-controls="additional-device-diagnostics" (click)="diagnosticsExpanded = !diagnosticsExpanded">
+      <span>Additional diagnostics</span><span aria-hidden="true">{{diagnosticsExpanded ? '▴' : '▾'}}</span>
+    </button>
+    <div id="additional-device-diagnostics" class="specs diagnostics-specs" *ngIf="diagnosticsExpanded">
+      <div><small>OS build</small><strong>{{d.osBuild || 'Unavailable'}}</strong></div>
+      <div><small>System uptime</small><strong>{{d.uptimeHours != null ? (d.uptimeHours + ' hours') : 'Unavailable'}}</strong></div>
+      <div><small>Free disk space</small><strong>{{d.diskFreeGB != null ? (d.diskFreeGB + ' GB') : 'Unavailable'}}</strong></div>
+      <div><small>Total disk space</small><strong>{{d.diskTotalGB != null ? (d.diskTotalGB + ' GB') : 'Unavailable'}}</strong></div>
+      <div><small>Network connection</small><strong>{{d.networkType || 'Unavailable'}}</strong></div>
+      <div><small>CPU usage (sample)</small><strong>{{d.cpuUsagePercent != null ? (d.cpuUsagePercent + '%') : 'Unavailable'}}</strong></div>
+      <div><small>Memory utilization (estimate)</small><strong>{{d.memoryUsagePercent != null ? (d.memoryUsagePercent + '%') : 'Unavailable'}}</strong></div>
+      <div><small>Memory used</small><strong>{{d.memoryUsedGB != null ? (d.memoryUsedGB + ' GB') : 'Unavailable'}}</strong></div>
+      <div><small>Free physical memory</small><strong>{{d.memoryAvailableGB != null ? (d.memoryAvailableGB + ' GB') : 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>macOS memory pressure</small><strong>{{$any(d).macMemoryPressureLevel || 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>macOS memory availability</small><strong>{{$any(d).macMemoryPressureAvailablePercent != null ? ($any(d).macMemoryPressureAvailablePercent + '%') : 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>macOS swap usage</small><strong>{{$any(d).macSwapUsedGB != null && $any(d).macSwapTotalGB != null ? ($any(d).macSwapUsedGB + ' GB used / ' + $any(d).macSwapTotalGB + ' GB total') : 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>Network adapter</small><strong>{{$any(d).networkAdapter || 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>Network interface</small><strong>{{$any(d).networkInterface || 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>Receive / Send rate</small><strong>{{$any(d).networkReceiveKbps != null && $any(d).networkSendKbps != null ? ($any(d).networkReceiveKbps + ' / ' + $any(d).networkSendKbps + ' Kbps (1-second sample)') : 'Unavailable'}}</strong></div>
+      <div *ngIf="d.platform === 'darwin'"><small>Network errors (received / sent)</small><strong>{{$any(d).networkReceiveErrors != null && $any(d).networkSendErrors != null ? ($any(d).networkReceiveErrors + ' / ' + $any(d).networkSendErrors) : 'Unavailable'}}</strong></div>
+    </div>
+  </div>
+  <label class="check"><input type="checkbox" [(ngModel)]="includeDiagnostics"/> Include additional diagnostics with my support request</label>
+  <p class="hint">Diagnostics are collected locally. When an asset is found, its information is already available in TeamDynamix. Device information is not proof of identity.</p>
+</section>
 <div *ngIf="error()" class="alert" role="alert">{{error()}}</div><div *ngIf="success() as result" class="confirmation" role="status"><strong>{{result.demo?'Demo request validated':'Request submitted successfully'}}</strong><p>{{result.demo?'Nothing was sent to TeamDynamix.':'Ticket #'+result.ticketId+' was created in TeamDynamix.'}}</p><p *ngIf="result.assetWarning">{{result.assetWarning}}</p><button type="button" class="link" *ngIf="result.url" (click)="openTicket()">View ticket ↗</button></div><button class="submit" [disabled]="busy()||!title.trim()||!details.trim()" (click)="submit()">{{busy()?'Submitting…':'Submit support request →'}}</button><p class="foot">Grand Rapids Community College • Raider Assist v0.1</p></main></div>

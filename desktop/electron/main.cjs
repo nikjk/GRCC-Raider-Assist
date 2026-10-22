@@ -4,7 +4,7 @@ const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, shell } = require(
 const path = require('node:path');
 const fs = require('node:fs');
 const { parseEnv } = require('node:util');
-const { getDevice } = require('./device.cjs');
+const { getDevice, performanceSnapshot } = require('./device.cjs');
 
 // Only one Raider Assist instance can own the tray icon.
 const singleInstance = app.requestSingleInstanceLock();
@@ -208,7 +208,7 @@ if (!singleInstance) {
     createWindow();
     updateTrayMenu();
 
-    ipcMain.handle('device:get', () => getDevice());
+    ipcMain.handle('device:get', async () => ({...await getDevice(), ...await performanceSnapshot()}));
     ipcMain.handle('locations:list', () => send('/api/locations'));
     ipcMain.handle('locations:rooms', (_event, locationId) => {
       if (!Number.isSafeInteger(locationId) || locationId <= 0) throw new Error('Invalid building');
@@ -217,6 +217,10 @@ if (!singleInstance) {
     ipcMain.handle('backend:status', () => send('/health'));
     ipcMain.handle('ticket:submit', async (_event, payload) => {
       const device = await getDevice();
+      if (payload?.includeDiagnostics === true) {
+        try { Object.assign(device, await performanceSnapshot()); }
+        catch (error) { console.warn('Performance snapshot unavailable:', error.message); }
+      }
       return send('/api/tickets', {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...sandboxTestHeaders() },
