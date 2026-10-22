@@ -14,17 +14,6 @@ function id(env, key) {
 const normalizeSerial = (value) => String(value ?? '').trim().toUpperCase();
 const assetIdOf = (value) => Number(value?.ID ?? value?.AssetID ?? value?.AssetId);
 
-
-const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-})[character]);
-const htmlParagraphs = value => String(value ?? '').split(/\n\s*\n/).filter(Boolean)
-  .map(part => `<p>${escapeHtml(part).replace(/\n/g,'<br>')}</p>`).join('');
-const htmlTable = rows => `<table><tbody>${rows.map(([label,value])=>
-  `<tr><th scope="row" style="text-align:left;padding:5px 12px 5px 0">${escapeHtml(label)}</th>`+
-  `<td style="padding:5px 0">${escapeHtml(value)}</td></tr>`).join('')}</tbody></table>`;
-const roundMetric = (n,suffix='') => Number.isFinite(n)?`${Math.round(n*10)/10}${suffix}`:'Unavailable';
-
 export class TeamDynamix {
   constructor(env = process.env) {
     this.env = env;
@@ -187,26 +176,7 @@ export class TeamDynamix {
       }
     }
 
-    const diagnosticRows = [
-      ...(payload.device.osBuild ? [['OS build',payload.device.osBuild]] : []),
-      ...(Number.isFinite(payload.device.uptimeHours) ? [['System uptime',`${payload.device.uptimeHours} hours`]] : []),
-      ...(Number.isFinite(payload.device.diskFreeGB) ? [['Free disk space',`${payload.device.diskFreeGB} GB`]] : []),
-      ...(Number.isFinite(payload.device.diskTotalGB) ? [['Total disk space',`${payload.device.diskTotalGB} GB`]] : []),
-      ...(payload.device.networkType ? [['Network connection',payload.device.networkType]] : [])
-    ];
     const perf = payload.device;
-    if(Number.isFinite(perf.cpuUsagePercent)) diagnosticRows.push(['CPU utilization (1-second sample)',roundMetric(perf.cpuUsagePercent,'%')]);
-    if(Number.isFinite(perf.memoryUsagePercent)) diagnosticRows.push(['Memory utilization (estimate)',roundMetric(perf.memoryUsagePercent,'%')]);
-    if(Number.isFinite(perf.memoryUsedGB)) diagnosticRows.push(['Memory used (estimate)',`${roundMetric(perf.memoryUsedGB)} GB`]);
-    if(Number.isFinite(perf.memoryAvailableGB)) diagnosticRows.push(['Free physical memory',`${roundMetric(perf.memoryAvailableGB)} GB`]);
-    if(Number.isFinite(perf.memoryTotalGB)) diagnosticRows.push(['Installed memory',`${roundMetric(perf.memoryTotalGB)} GB`]);
-    if(Array.isArray(perf.cpuLoadAverage) && perf.cpuLoadAverage.length===3) diagnosticRows.push(['CPU load (1/5/15 minutes)',perf.cpuLoadAverage.join(' / ')]);
-    if(perf.performanceSampledAt && !Number.isNaN(Date.parse(perf.performanceSampledAt))) diagnosticRows.push(['Performance sampled (UTC)',new Date(perf.performanceSampledAt).toISOString()]);
-
-    // TeamDynamix in this environment displays Ticket.Description as plain text,
-    // so do not submit HTML tags or CSS here.
-    const line = (label, value) => `${label}: ${value}`;
-    const diagnostics = diagnosticRows.map(([label, value]) => line(label, value));
     // RAIDER_DIAGNOSTICS_FEED_V1
     // Keep the ticket description focused on the issue. All diagnostic readings
     // are added as a private internal feed entry after ticket creation.
