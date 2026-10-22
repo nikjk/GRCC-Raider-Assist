@@ -184,7 +184,12 @@ export class TeamDynamix {
       `Model: ${payload.device.model || 'Unknown'}`,
       `OS: ${payload.device.os || 'Unknown'} ${payload.device.osVersion || ''}`.trim(),
       `CPU: ${payload.device.cpu || 'Unknown'}`,
-      `Memory (GB): ${payload.device.memoryGB ?? 'Unknown'}`
+      `Memory (GB): ${payload.device.memoryGB ?? 'Unknown'}`,
+      ...(payload.device.osBuild ? [`OS build: ${payload.device.osBuild}`] : []),
+      ...(Number.isFinite(payload.device.uptimeHours) ? [`Uptime (hours): ${payload.device.uptimeHours}`] : []),
+      ...(Number.isFinite(payload.device.diskFreeGB) ? [`Free disk (GB): ${payload.device.diskFreeGB}`] : []),
+      ...(Number.isFinite(payload.device.diskTotalGB) ? [`Total disk (GB): ${payload.device.diskTotalGB}`] : []),
+      ...(payload.device.networkType ? [`Network connection: ${payload.device.networkType}`] : [])
     ].join('\n') : '';
 
     const description = [

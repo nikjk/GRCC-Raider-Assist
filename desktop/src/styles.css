@@ -76,3 +76,22 @@ select:disabled{color:#667891;background:#f4f6fa;cursor:not-allowed}.field-hint{
   .brand-logo-wrap { width: 64px; height: 64px; flex-basis: 64px; }
   .masthead h1 { margin-top: 13px; }
 }
+
+/* Searchable native location/room suggestions. */
+input[list]:disabled{color:#667891;background:#f4f6fa;cursor:not-allowed}
+input[list]:focus{outline:2px solid #00306b;outline-offset:1px}
+
+/* Custom, theme-consistent, downward-only Building/Room suggestion lists.
+   These are in the document flow, so they can never flip above their inputs. */
+.raider-search-picker{width:100%;min-width:0}
+.raider-search-results{width:100%;max-height:190px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #cfdae8;border-radius:8px;background:#fff;box-shadow:0 5px 14px rgba(0,48,107,.12);margin-top:4px;padding:4px;scrollbar-color:#c3d1e3 transparent}
+.raider-search-result{display:block;width:100%;border:0;border-radius:6px;background:#fff;color:#172b4a;padding:9px 10px;text-align:left;font-size:12px;font-weight:400;line-height:1.35;cursor:pointer}
+.raider-search-result:hover,.raider-search-result.highlighted,.raider-search-result:focus-visible{background:#edf4fc;color:#00306b;outline:none}
+.raider-search-result[aria-selected="true"]{font-weight:700}
+.raider-search-empty{padding:10px;color:#65778e;font-size:12px}
+
+/* Clear selected Building or Room without changing the original white picker style. */
+.raider-search-input-wrap{position:relative;min-width:0}
+.raider-search-input-wrap input{padding-right:39px!important}
+.raider-search-clear{position:absolute;top:50%;right:7px;transform:translateY(-50%);display:grid;place-items:center;width:27px;height:27px;border:0;border-radius:6px;background:transparent;color:#65778e;font-size:21px;line-height:1;cursor:pointer}
+.raider-search-clear:hover,.raider-search-clear:focus-visible{background:#edf4fc;color:#00306b;outline-offset:1px}
