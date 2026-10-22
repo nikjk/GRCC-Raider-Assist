@@ -1,0 +1,39 @@
+name: Raider Assist CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Syntax and Angular build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install desktop dependencies
+        run: npm ci --prefix desktop
+      - name: Check backend and Electron syntax
+        run: |
+          node --check backend/tdx.mjs
+          node --check backend/server.mjs
+          node --check desktop/electron/device.cjs
+          node --check desktop/electron/main.cjs
+          node --check desktop/electron/preload.cjs
+      - name: Build Angular desktop
+        run: npm --prefix desktop run build
